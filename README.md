@@ -2,14 +2,6 @@
 
 אתר סטטי בעברית, מתאים ל-GitHub Pages ולנייד. אין צורך בהתקנות או בשרת.
 
-## העלאה ל-GitHub
-
-1. צרו Repository חדש ב-GitHub, למשל `math-open-mic`, והגדירו אותו Public.
-2. לחצו **Add file → Upload files** והעלו **את תוכן התיקייה** (לא את קובץ ה-ZIP). חשוב לשמור גם על התיקייה `assets` עם התמונה שבתוכה.
-3. לחצו **Commit changes**.
-4. ב-Repository היכנסו ל-**Settings → Pages**. בחרו **Deploy from a branch**, ענף `main`, תיקייה `/(root)`, ושמרו.
-5. לאחר שהפרסום יסתיים, כתובת האתר תהיה בדרך כלל `https://USERNAME.github.io/math-open-mic/` (להחליף USERNAME בשם המשתמש).
-
 ## איך מעדכנים?
 
 פתחו את `data.js` ב-GitHub ולחצו על סמל העיפרון (**Edit this file**). ערכו את הערכים ושמרו באמצעות **Commit changes**. העדכון יופיע באתר לאחר הפרסום מחדש (לרוב בתוך דקות).
