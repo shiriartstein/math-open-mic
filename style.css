@@ -441,3 +441,15 @@ footer a {
   }
 
 }
+
+
+.symbol {
+  overflow: hidden;
+}
+
+.symbol img {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+}
+
