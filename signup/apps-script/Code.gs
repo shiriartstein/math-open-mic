@@ -15,6 +15,7 @@
  *   POST {"action":"remove","key","ns":[3,7]}      → {ok, removed}
  */
 
+const VERSION = '2026-10-14d';      // מופיע בתשובות ping/status/admin, כדי לדעת איזו גרסה באמת רצה
 const SHEET_NAME = 'הרשמות';
 const OLD_HEADERS = ['#', 'זמן', 'שיר', 'מבצעים', 'בוצע', 'הערות'];   // הגרסה הראשונה, בלי טלפון
 const SETTINGS_NAME = 'הגדרות';
@@ -33,8 +34,8 @@ function setup() {
 function doGet(e) {
   const p = (e && e.parameter) || {};
   const action = p.action || 'list';
-  if (action === 'ping') return json_({ ok: true });
-  if (action === 'status') return json_({ ok: true, open: isOpen_() });
+  if (action === 'ping') return json_({ ok: true, version: VERSION });
+  if (action === 'status') return json_({ ok: true, open: isOpen_(), version: VERSION });
   return json_({ ok: true, open: isOpen_(), rows: readRows_(false) });
 }
 
@@ -49,8 +50,8 @@ function doPost(e) {
   if (action === 'signup') return signup_(body);
 
   if (!checkKey_(body.key)) return json_({ ok: false, error: 'bad key' });
-  if (action === 'admin') return json_({ ok: true, open: isOpen_(), rows: readRows_(true) });
-  if (action === 'setOpen') { setOpen_(body.open === true); return json_({ ok: true, open: isOpen_() }); }
+  if (action === 'admin') return json_({ ok: true, open: isOpen_(), rows: readRows_(true), version: VERSION, cell: openCellInfo_() });
+  if (action === 'setOpen') { setOpen_(body.open === true); return json_({ ok: true, open: isOpen_(), version: VERSION, cell: openCellInfo_() }); }
   if (action === 'remove') return remove_(body.ns);
   return json_({ ok: false, error: 'unknown action' });
 }
@@ -199,6 +200,13 @@ function checkKey_(k) {
 function isOpen_() {
   const v = getSettings_().getRange('B2').getValue();
   return v === true || String(v).trim().toUpperCase() === 'TRUE';
+}
+
+/** אבחון של תא המתג B2 (רק לניהול): מה באמת שמור בו. */
+function openCellInfo_() {
+  const cell = getSettings_().getRange('B2');
+  const v = cell.getValue();
+  return { raw: String(v), type: typeof v, format: cell.getNumberFormat(), checkbox: !!cell.getDataValidation() };
 }
 
 function setOpen_(v) {
