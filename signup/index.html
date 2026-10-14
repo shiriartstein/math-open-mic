@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#1b0c29">
+  <meta name="robots" content="noindex">
+  <title>הרשמה | במה פתוחה!</title>
+  <meta name="description" content="הרשמה לשירה בבמה הפתוחה של בית הספר למדעי המתמטיקה">
+  <link rel="stylesheet" href="signup.css">
+  <script defer src="../data.js"></script>
+  <script defer src="config.js"></script>
+  <script defer src="signup.js"></script>
+</head>
+<body>
+
+  <div class="ticker">✦ MATH · MUSIC · PEOPLE ✦</div>
+
+  <main class="wrap">
+
+    <header class="hero">
+      <p id="tagline" class="tagline">אין נוסחה לערב כזה!</p>
+      <h1 id="title">במה פתוחה!</h1>
+      <p id="when" class="organizer"></p>
+    </header>
+
+    <div id="notReady" class="notice" hidden>
+      ההרשמה עדיין לא הופעלה. המארגנים צריכים להשלים את ההגדרה (ראו signup/README.md).
+    </div>
+
+    <section id="formCard" class="card">
+      <div class="kicker">SIGN UP ✦</div>
+      <h2>נרשמים לשיר</h2>
+
+      <form id="form" novalidate>
+
+        <label for="performers">מי שר?</label>
+        <input id="performers" type="text" dir="auto" autocomplete="name"
+               maxlength="120" placeholder="שם, או שמות (למשל: דנה ויוסי)">
+
+        <label for="song">איזה שיר?</label>
+        <input id="song" type="text" dir="auto" autocomplete="off"
+               maxlength="120" placeholder="התחילו להקליד או בחרו מהרשימה">
+        <div id="picker" class="picker" hidden></div>
+        <p class="hint">
+          שיר שלא ברשימה? אפשר לכתוב אותו, אבל בואו עם מישהו שיודע לנגן אותו.
+        </p>
+
+        <button id="submit" class="primary" type="submit">להירשם!</button>
+        <p id="error" class="error" hidden></p>
+
+      </form>
+    </section>
+
+    <section id="successCard" class="card" hidden>
+      <div class="kicker">YOU'RE IN ✦</div>
+      <h2>נרשמתם!</h2>
+      <p class="big">המספר שלכם בתור: <b id="number"></b></p>
+      <p id="summary" class="summary"></p>
+      <p>נתראה ליד הבמה. רוצים לשיר עוד שיר?</p>
+      <button id="again" class="secondary" type="button">להרשמה נוספת</button>
+    </section>
+
+    <footer>
+      <a href="../">לאתר האירוע ולרשימת השירים המלאה</a>
+    </footer>
+
+  </main>
+
+</body>
+</html>

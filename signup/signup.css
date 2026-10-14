@@ -1,0 +1,386 @@
+/* Styles for the sign-up pages (signup/). Palette matches the main site. */
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #1b0c29 linear-gradient(#271332, #130b22) fixed;
+  color: #fff0d0;
+  font-family: Arial, sans-serif;
+}
+
+a { color: inherit; }
+
+.ticker {
+  text-align: center;
+  background: #ff833c;
+  color: #27112d;
+  padding: 11px;
+  font-size: 13px;
+  letter-spacing: 3px;
+  font-weight: 900;
+}
+
+.wrap {
+  width: min(680px, calc(100% - 32px));
+  margin: auto;
+  padding: 22px 0 50px;
+}
+
+/* Header */
+
+.hero { text-align: center; margin-bottom: 24px; }
+
+.tagline {
+  font-size: clamp(18px, 4vw, 26px);
+  color: #ffb663;
+  font-weight: 900;
+  margin: 14px 0 4px;
+  transform: rotate(-3deg);
+}
+
+.hero h1 {
+  font-size: clamp(54px, 14vw, 96px);
+  margin: 0;
+  line-height: 1.1;
+  color: #ff8536;
+  text-shadow: 4px 4px #fa3e8f, 8px 8px #4a194f;
+  letter-spacing: -3px;
+}
+
+.organizer {
+  font-weight: 900;
+  font-size: clamp(15px, 2.5vw, 20px);
+  margin: 14px 0 0;
+}
+
+/* Cards */
+
+.card {
+  background: #fff0d0;
+  color: #24142d;
+  border-radius: 24px;
+  padding: clamp(22px, 5vw, 40px);
+  box-shadow: 8px 10px #fa438d;
+}
+
+.card + .card { margin-top: 26px; }
+
+.kicker {
+  color: #ee4183;
+  font-weight: 900;
+  letter-spacing: 2px;
+  font-size: 13px;
+}
+
+.card h2 {
+  font-size: clamp(30px, 6vw, 44px);
+  margin: 10px 0 18px;
+}
+
+.notice {
+  background: #ffc56e;
+  color: #24122c;
+  padding: 16px 20px;
+  border-radius: 16px;
+  font-weight: bold;
+  margin-bottom: 22px;
+  line-height: 1.5;
+}
+
+/* Form */
+
+label {
+  display: block;
+  font-weight: 900;
+  font-size: 19px;
+  margin: 20px 0 8px;
+}
+
+input[type=text] {
+  width: 100%;
+  background: #fff;
+  border: 3px solid #ffb15e;
+  border-radius: 40px;
+  padding: 14px 20px;
+  font: inherit;
+  font-size: 18px;
+  color: #24142d;
+}
+
+input[type=text]:focus {
+  outline: none;
+  border-color: #fa438d;
+}
+
+.hint {
+  color: #765671;
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 10px 0 0;
+}
+
+button {
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  border: 0;
+  border-radius: 40px;
+}
+
+.primary {
+  display: block;
+  width: 100%;
+  margin-top: 26px;
+  padding: 16px;
+  font-size: 22px;
+  background: #ff4b91;
+  color: #fff;
+  box-shadow: 4px 5px #ff8536;
+}
+
+.primary:disabled { opacity: .6; cursor: wait; }
+
+.secondary {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 12px 22px;
+  font-size: 17px;
+  background: #362043;
+  color: #fff0d0;
+}
+
+.error {
+  background: #ffd0d0;
+  color: #7a1b1b;
+  border-radius: 14px;
+  padding: 12px 16px;
+  font-weight: 700;
+  margin: 16px 0 0;
+  line-height: 1.5;
+}
+
+/* Song picker */
+
+.picker {
+  margin-top: 10px;
+  max-height: 320px;
+  overflow: auto;
+  border: 3px solid #ffdab0;
+  border-radius: 16px;
+  background: #fff7e8;
+}
+
+.picker[hidden] { display: none; }
+
+.song {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid #ffe2c0;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.song:last-child { border-bottom: 0; }
+
+.song:hover, .song.selected { background: #ffdab0; }
+
+.num {
+  color: #ec4c83;
+  font-weight: 900;
+  min-width: 28px;
+}
+
+.name {
+  flex: 1;
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
+.artist {
+  color: #6e5768;
+  font-size: 13px;
+  max-width: 40%;
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+
+.picker .none {
+  padding: 14px;
+  color: #765671;
+  font-size: 15px;
+}
+
+/* Success */
+
+.big {
+  font-size: 24px;
+  margin: 0 0 14px;
+  line-height: 1.6;
+}
+
+.big b {
+  display: inline-block;
+  background: #ff8536;
+  color: #24122c;
+  border-radius: 40px;
+  padding: 2px 18px;
+  font-size: 34px;
+}
+
+.summary {
+  background: #ffdab0;
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-weight: 700;
+  line-height: 1.6;
+  margin: 0 0 14px;
+}
+
+/* Footer */
+
+footer {
+  text-align: center;
+  padding: 36px 0 0;
+  color: #d4b9d0;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+footer a { color: #ff99bf; }
+
+/* ---------- List page ---------- */
+
+.list-page .wrap { width: min(900px, calc(100% - 32px)); }
+
+.heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.heading h1 {
+  font-size: clamp(30px, 6vw, 48px);
+  margin: 0 0 6px;
+  color: #ff8536;
+}
+
+.heading p { margin: 0; color: #e5c4d6; }
+
+#count {
+  background: #ff8536;
+  color: #24122c;
+  border-radius: 30px;
+  padding: 10px 17px;
+  white-space: nowrap;
+  font-size: 18px;
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  align-items: center;
+  justify-content: space-between;
+  margin: 18px 0 6px;
+  color: #d4b9d0;
+  font-size: 15px;
+}
+
+.bar label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bar button {
+  background: #362043;
+  color: #fff0d0;
+  border: 2px solid #985075;
+  padding: 8px 14px;
+  font-size: 14px;
+}
+
+.status.error { color: #ffb0b0; }
+
+.rows {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 4px 14px;
+  align-items: center;
+  background: #fff0d0;
+  color: #24122d;
+  border-radius: 14px;
+  padding: 14px 16px;
+  border-right: 6px solid #ff8a35;
+}
+
+.row .n {
+  grid-row: span 2;
+  font-size: 30px;
+  font-weight: 900;
+  color: #ec4c83;
+  min-width: 44px;
+  text-align: center;
+}
+
+.row .who {
+  font-size: 22px;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.row .what {
+  color: #6e5768;
+  font-size: 17px;
+  overflow-wrap: anywhere;
+}
+
+.row .t {
+  grid-row: span 2;
+  color: #6e5768;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.row.done {
+  opacity: .5;
+  border-right-color: #8fbf8f;
+}
+
+.row.done .who { text-decoration: line-through; }
+
+.row.done .n::after { content: ' ✓'; color: #4b8f4b; font-size: 18px; }
+
+#empty {
+  color: #e5c4d6;
+  font-size: 20px;
+  text-align: center;
+  padding: 40px 0;
+}
+
+@media print {
+  body { background: #fff; color: #000; }
+  .ticker, .bar, footer { display: none; }
+  .row { border: 1px solid #999; box-shadow: none; }
+  .heading h1 { color: #000; }
+  .heading p, .status { color: #333; }
+}

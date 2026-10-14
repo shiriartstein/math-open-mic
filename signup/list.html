@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#1b0c29">
+  <meta name="robots" content="noindex">
+  <title>רשימת הנרשמים | במה פתוחה!</title>
+  <link rel="stylesheet" href="signup.css">
+  <script defer src="config.js"></script>
+  <script defer src="list.js"></script>
+</head>
+<body class="list-page">
+
+  <div class="ticker">✦ SIGN-UP LIST ✦</div>
+
+  <main class="wrap">
+
+    <div class="heading">
+      <div>
+        <h1>רשימת הנרשמים</h1>
+        <p>לפי סדר ההרשמה · מתעדכן אוטומטית כל 10 שניות</p>
+      </div>
+      <b id="count">…</b>
+    </div>
+
+    <div class="bar">
+      <span id="status" class="status">מתחבר…</span>
+      <label><input id="hideDone" type="checkbox"> להסתיר שירים שכבר בוצעו</label>
+      <button id="refresh" type="button">לרענן עכשיו</button>
+    </div>
+
+    <ol id="rows" class="rows"></ol>
+    <p id="empty" hidden>עדיין לא נרשם אף אחד.</p>
+
+    <footer>
+      סימון "בוצע" ומחיקת שורות עושים בגיליון Google Sheets של ההרשמות.<br>
+      <a href="qr.html">דף ה-QR</a> · <a href="./">טופס ההרשמה</a> · <a href="../">האתר</a>
+    </footer>
+
+  </main>
+
+</body>
+</html>

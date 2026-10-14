@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#1b0c29">
+  <meta name="robots" content="noindex">
+  <title>QR להרשמה | במה פתוחה!</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: #1b0c29 linear-gradient(140deg, #1b0c29, #421649 60%, #190a2a) fixed;
+      color: #fff0d0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 3vmin 16px;
+    }
+    h1 {
+      font-size: clamp(30px, 6vmin, 64px);
+      margin: 0 0 2vmin;
+      color: #ff8536;
+      text-shadow: 3px 3px #fa3e8f;
+    }
+    .qr {
+      width: min(92vw, 72vh);
+      background: #fff;
+      border-radius: 24px;
+      padding: 3vmin;
+      box-shadow: 10px 12px #fa438d, 0 0 0 8px #ff8536;
+    }
+    .qr svg { display: block; width: 100%; height: auto; }
+    .url {
+      margin: 3vmin 0 0;
+      font-size: clamp(16px, 3vmin, 30px);
+      font-weight: 900;
+      direction: ltr;
+      overflow-wrap: anywhere;
+    }
+    .url a { color: #ffb663; text-decoration: none; }
+    .sub { margin: 1vmin 0 0; font-size: clamp(14px, 2.4vmin, 22px); color: #e5c4d6; }
+    @media print {
+      body { background: #fff; color: #000; }
+      h1 { color: #000; text-shadow: none; }
+      .qr { box-shadow: none; border: 2px solid #000; }
+      .url a { color: #000; }
+      .sub { color: #333; }
+    }
+  </style>
+</head>
+<body>
+  <h1>סורקים ונרשמים לשיר!</h1>
+  <div class="qr"><svg role="img" aria-label="קוד QR להרשמה" viewBox="0 0 444 444"><path transform="scale(12)" stroke="#1b0c29" d="M2 2.5h7m1 0h1m4 0h1m2 0h4m1 0h1m1 0h1m2 0h7m-33 1h1m5 0h1m1 0h1m2 0h3m4 0h1m1 0h2m1 0h2m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m4 0h1m3 0h1m2 0h1m1 0h1m5 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h2m3 0h2m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m2 0h1m2 0h3m4 0h2m3 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m2 0h1m1 0h3m3 0h3m2 0h1m1 0h1m1 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h1m1 0h1m6 0h1m2 0h1m1 0h2m-24 1h1m1 0h2m1 0h3m3 0h2m1 0h1m1 0h4m1 0h1m1 0h1m2 0h1m2 0h1m1 0h2m-31 1h2m3 0h1m1 0h1m1 0h1m6 0h3m1 0h2m2 0h2m1 0h2m1 0h1m-33 1h2m2 0h5m2 0h1m2 0h1m2 0h1m3 0h3m2 0h4m1 0h2m-32 1h3m1 0h1m2 0h3m1 0h5m2 0h1m3 0h1m1 0h1m1 0h1m1 0h1m-27 1h4m8 0h1m2 0h3m1 0h1m1 0h2m2 0h2m1 0h2m-33 1h4m3 0h3m1 0h3m2 0h2m1 0h1m2 0h1m1 0h1m2 0h1m1 0h1m1 0h1m-31 1h2m1 0h3m2 0h2m4 0h8m1 0h1m1 0h2m1 0h1m-30 1h2m3 0h1m3 0h1m1 0h1m4 0h1m3 0h2m3 0h2m1 0h3m-31 1h1m3 0h1m1 0h1m1 0h3m4 0h1m2 0h1m1 0h3m1 0h3m1 0h1m1 0h1m-24 1h1m2 0h1m1 0h2m1 0h1m1 0h1m2 0h1m2 0h2m1 0h1m1 0h2m1 0h2m-33 1h5m1 0h1m5 0h6m2 0h1m4 0h1m1 0h2m1 0h2m-32 1h1m2 0h3m2 0h3m2 0h1m2 0h1m5 0h2m1 0h2m1 0h1m2 0h1m-31 1h4m1 0h3m1 0h2m1 0h1m4 0h4m1 0h1m5 0h2m1 0h1m-33 1h4m1 0h1m1 0h3m2 0h1m2 0h1m1 0h5m1 0h1m2 0h1m2 0h2m1 0h1m-29 1h1m1 0h1m1 0h3m2 0h2m1 0h2m2 0h1m1 0h3m1 0h2m1 0h1m1 0h2m-32 1h1m1 0h3m1 0h1m1 0h1m2 0h3m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h2m1 0h1m-30 1h1m1 0h2m2 0h3m2 0h7m1 0h1m2 0h7m2 0h1m-24 1h1m4 0h7m1 0h4m3 0h2m-30 1h7m1 0h2m1 0h2m3 0h1m2 0h1m2 0h3m1 0h1m1 0h1m2 0h1m-32 1h1m5 0h1m1 0h1m1 0h3m2 0h1m4 0h5m3 0h5m-33 1h1m1 0h3m1 0h1m5 0h1m2 0h1m1 0h1m2 0h9m1 0h2m-32 1h1m1 0h3m1 0h1m1 0h3m2 0h2m3 0h1m1 0h1m1 0h1m4 0h1m2 0h1m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m5 0h1m5 0h1m5 0h2m2 0h1m-31 1h1m5 0h1m2 0h1m2 0h1m2 0h3m1 0h1m2 0h4m1 0h3m2 0h1m-33 1h7m1 0h3m1 0h2m1 0h7m3 0h2m1 0h1m1 0h1"/></svg></div>
+  <p class="url"><a href="https://shiriartstein.github.io/math-open-mic/signup/">shiriartstein.github.io/math-open-mic/signup/</a></p>
+  <p class="sub">בוחרים שיר, כותבים מי שר, ועולים לבמה ✦</p>
+</body>
+</html>
