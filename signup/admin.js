@@ -61,7 +61,7 @@
     const res = await fetch(endpoint, { method: 'POST', body: JSON.stringify(Object.assign({ key }, body)) });
     const out = await res.json();
     if (!out) throw new Error('empty');
-    if (out.error === 'bad key') { forgetKey(); askKey('הסיסמה לא נכונה. הסיסמה נמצאת בלשונית "הגדרות" בגיליון (תא B1).'); throw new Error('bad key'); }
+    if (out.error === 'bad key') { forgetKey(); askKey('הסיסמה לא נכונה.'); throw new Error('bad key'); }
     if (!out.ok) throw new Error(out.error || 'server');
     return out;
   }
