@@ -25,11 +25,11 @@
     </div>
 
     <section id="keyCard" class="card" hidden>
-      <div class="kicker">ADMIN KEY ✦</div>
-      <h2>מפתח ניהול</h2>
-      <p>הדף הזה מוגן במפתח. המפתח נמצא בגיליון ההרשמות, בלשונית "הגדרות" (תא B1), או בכתובת המלאה שבתא B3.</p>
-      <label for="keyInput">הדביקו את המפתח:</label>
-      <input id="keyInput" type="text" dir="ltr" autocomplete="off" placeholder="למשל: 3f9a1c…">
+      <div class="kicker">ORGANIZERS ONLY ✦</div>
+      <h2>כניסה לדף הניהול</h2>
+      <p>הדף מיועד למארגנים. הסיסמה נמצאת בגיליון ההרשמות, בלשונית "הגדרות" (תא B1).</p>
+      <label for="keyInput">סיסמה:</label>
+      <input id="keyInput" type="password" dir="ltr" autocomplete="current-password" placeholder="סיסמה">
       <button id="keySave" class="primary" type="button">כניסה</button>
       <p id="keyError" class="error" hidden></p>
     </section>
@@ -40,6 +40,7 @@
         <span id="status" class="status">מתחבר…</span>
         <button id="toggle" class="toggle" type="button" disabled>…</button>
         <button id="refresh" type="button">לרענן עכשיו</button>
+        <button id="logout" type="button">יציאה</button>
       </div>
 
       <div class="bar">

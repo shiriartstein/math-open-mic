@@ -9,13 +9,13 @@
  *   GET  …/exec?action=list    → {ok, open, rows:[{n,time,song,performers,done,notes}]}   (בלי טלפונים)
  *   GET  …/exec?action=status  → {ok, open}
  *   POST …/exec {"song","performers","phone"}  → {ok, number} | {ok:false, error:'closed'|'duplicate'|…}
- * ניהול (דורש key מגיליון "הגדרות"):
+ * ניהול (דורש key = הסיסמה שבתא B1 בלשונית "הגדרות"; משנים אותה פשוט בעריכת התא):
  *   POST {"action":"admin","key"}                  → {ok, open, rows:[… כולל phone]}
  *   POST {"action":"setOpen","key","open":true}    → {ok, open}
  *   POST {"action":"remove","key","ns":[3,7]}      → {ok, removed}
  */
 
-const VERSION = '2026-10-14d';      // מופיע בתשובות ping/status/admin, כדי לדעת איזו גרסה באמת רצה
+const VERSION = '2026-10-14e';      // מופיע בתשובות ping/status/admin, כדי לדעת איזו גרסה באמת רצה
 const SHEET_NAME = 'הרשמות';
 const OLD_HEADERS = ['#', 'זמן', 'שיר', 'מבצעים', 'בוצע', 'הערות'];   // הגרסה הראשונה, בלי טלפון
 const SETTINGS_NAME = 'הגדרות';
@@ -28,7 +28,7 @@ function setup() {
   getSheet_();
   const settings = getSettings_();
   setOpen_(isOpen_());                 // מנרמל את תא המתג (B2) לתיבת סימון אמיתית
-  console.log('דף הניהול: ' + settings.getRange('B3').getValue());
+  console.log('דף הניהול: ' + settings.getRange('B3').getValue() + '  (סיסמה: תא B1 בלשונית "הגדרות")');
 }
 
 function doGet(e) {
@@ -171,11 +171,11 @@ function getSettings_() {
   let s = ss.getSheetByName(SETTINGS_NAME);
   if (!s) {
     s = ss.insertSheet(SETTINGS_NAME);
-    const key = Utilities.getUuid().replace(/-/g, '').slice(0, 16);
+    const key = Utilities.getUuid().replace(/-/g, '').slice(0, 16);   // סיסמה התחלתית אקראית; מחליפים לסיסמה משלכם בתא B1
     s.getRange('A1:B3').setValues([
-      ['מפתח ניהול', key],
+      ['סיסמת ניהול', key],
       ['הרשמה פתוחה', false],
-      ['דף הניהול', ADMIN_PAGE + '#' + key]
+      ['דף הניהול', ADMIN_PAGE]
     ]);
     s.getRange('B1').setNumberFormat('@');
     s.getRange('B3').setNumberFormat('@');

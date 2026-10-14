@@ -15,18 +15,31 @@
   let busy = false;                        // a removal / toggle in progress: pause auto-refresh
   const selected = new Set();              // numbers (n) of ticked rows
 
-  /* ---------- key handling: #key in the URL, or remembered on this device ---------- */
+  /* ---------- password: remembered on this device; a #hash in the URL is also accepted ---------- */
+
+  function forgetKey() {
+    key = '';
+    try { localStorage.removeItem(KEY_STORE); } catch (e) { /* ignore */ }
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+  }
 
   function readKey() {
     const fromHash = decodeURIComponent(location.hash.replace(/^#(key=)?/, '')).trim();
-    if (fromHash) { key = fromHash; try { localStorage.setItem(KEY_STORE, key); } catch (e) { /* ignore */ } return; }
+    if (fromHash) {
+      key = fromHash;
+      try { localStorage.setItem(KEY_STORE, key); } catch (e) { /* ignore */ }
+      history.replaceState(null, '', location.pathname + location.search);   // keep the password out of the address bar
+      return;
+    }
     try { key = (localStorage.getItem(KEY_STORE) || '').trim(); } catch (e) { key = ''; }
   }
 
   function askKey(msg) {
     $('keyCard').hidden = false;
     $('panel').hidden = true;
-    if (msg) { $('keyError').textContent = msg; $('keyError').hidden = false; }
+    $('keyInput').value = '';
+    $('keyError').hidden = !msg;
+    if (msg) $('keyError').textContent = msg;
   }
 
   $('keySave').addEventListener('click', () => {
@@ -34,13 +47,13 @@
     if (!k) return;
     key = k;
     try { localStorage.setItem(KEY_STORE, key); } catch (e) { /* ignore */ }
-    location.hash = key;
     $('keyError').hidden = true;
     $('keyCard').hidden = true;
     $('panel').hidden = false;
     load();
   });
   $('keyInput').addEventListener('keydown', ev => { if (ev.key === 'Enter') $('keySave').click(); });
+  $('logout').addEventListener('click', () => { forgetKey(); askKey(); });
 
   /* ---------- backend ---------- */
 
@@ -48,7 +61,7 @@
     const res = await fetch(endpoint, { method: 'POST', body: JSON.stringify(Object.assign({ key }, body)) });
     const out = await res.json();
     if (!out) throw new Error('empty');
-    if (out.error === 'bad key') { askKey('המפתח לא נכון. בדקו אותו בלשונית "הגדרות" בגיליון.'); throw new Error('bad key'); }
+    if (out.error === 'bad key') { forgetKey(); askKey('הסיסמה לא נכונה. הסיסמה נמצאת בלשונית "הגדרות" בגיליון (תא B1).'); throw new Error('bad key'); }
     if (!out.ok) throw new Error(out.error || 'server');
     return out;
   }
@@ -210,7 +223,6 @@
 
   $('refresh').addEventListener('click', load);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
-  window.addEventListener('hashchange', () => { readKey(); load(); });
 
   /* ---------- start ---------- */
 
