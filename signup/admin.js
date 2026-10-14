@@ -166,8 +166,10 @@
     $('rows').replaceChildren(frag);
     $('empty').hidden = rows.length > 0;
     $('empty').textContent = rows.length ? '' : 'עדיין לא נרשם אף אחד.';
-    const pending = rows.filter(r => !r.done).length;
-    $('count').textContent = rows.length + ' נרשמו' + (pending < rows.length ? ' · ' + pending + ' ממתינים' : '');
+    const done = rows.filter(r => r.done).length;
+    $('count').textContent = rows.length
+      ? `${rows.length} נרשמו · ${done} בוצעו · ${rows.length - done} ממתינים`
+      : '0 נרשמו';
     renderToggle();
     updateBatch();
   }

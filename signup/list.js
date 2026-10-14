@@ -32,8 +32,10 @@
     }
     $('rows').replaceChildren(frag);
     $('empty').hidden = shown.length > 0;
-    const pending = rows.filter(r => !r.done).length;
-    $('count').textContent = rows.length + ' נרשמו' + (pending < rows.length ? ' · ' + pending + ' ממתינים' : '');
+    const done = rows.filter(r => r.done).length;
+    $('count').textContent = rows.length
+      ? `${rows.length} נרשמו · ${done} בוצעו · ${rows.length - done} ממתינים`
+      : '0 נרשמו';
   }
 
   async function load() {
