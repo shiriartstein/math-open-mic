@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#1b0c29">
+  <meta name="robots" content="noindex">
+  <title>ניהול ההרשמות | במה פתוחה!</title>
+  <link rel="stylesheet" href="signup.css">
+  <script defer src="config.js"></script>
+  <script defer src="admin.js"></script>
+</head>
+<body class="list-page admin-page">
+
+  <div class="ticker">✦ ORGANIZERS ONLY ✦</div>
+
+  <main class="wrap">
+
+    <div class="heading">
+      <div>
+        <h1>ניהול ההרשמות</h1>
+        <p>לפי סדר ההרשמה · כולל טלפונים · מתעדכן אוטומטית כל 10 שניות</p>
+      </div>
+      <b id="count">…</b>
+    </div>
+
+    <section id="keyCard" class="card" hidden>
+      <div class="kicker">ADMIN KEY ✦</div>
+      <h2>מפתח ניהול</h2>
+      <p>הדף הזה מוגן במפתח. המפתח נמצא בגיליון ההרשמות, בלשונית "הגדרות" (תא B1), או בכתובת המלאה שבתא B3.</p>
+      <label for="keyInput">הדביקו את המפתח:</label>
+      <input id="keyInput" type="text" dir="ltr" autocomplete="off" placeholder="למשל: 3f9a1c…">
+      <button id="keySave" class="primary" type="button">כניסה</button>
+      <p id="keyError" class="error" hidden></p>
+    </section>
+
+    <div id="panel" hidden>
+
+      <div class="bar">
+        <span id="status" class="status">מתחבר…</span>
+        <button id="toggle" class="toggle" type="button" disabled>…</button>
+        <button id="refresh" type="button">לרענן עכשיו</button>
+      </div>
+
+      <div class="bar">
+        <label><input id="selectAll" type="checkbox"> לסמן את כולם</label>
+        <button id="removeSelected" class="danger" type="button" disabled>להסיר את המסומנים (0)</button>
+      </div>
+
+      <ol id="rows" class="rows"></ol>
+      <p id="empty" hidden>עדיין לא נרשם אף אחד.</p>
+
+    </div>
+
+    <footer>
+      הטלפונים מופיעים רק כאן. הרשימה הפומבית (בלי טלפונים): <a href="list.html">list.html</a><br>
+      <a href="qr.html">דף ה-QR</a> · <a href="./">טופס ההרשמה</a> · <a href="../">האתר</a>
+    </footer>
+
+  </main>
+
+</body>
+</html>

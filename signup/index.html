@@ -28,27 +28,42 @@
       ההרשמה עדיין לא הופעלה. המארגנים צריכים להשלים את ההגדרה (ראו signup/README.md).
     </div>
 
+    <div id="closed" class="notice closed" hidden>
+      ההרשמה סגורה כרגע. כשהיא תיפתח יהיה אפשר להירשם כאן.
+    </div>
+
     <section id="formCard" class="card">
       <div class="kicker">SIGN UP ✦</div>
       <h2>נרשמים לשיר</h2>
 
+      <p class="rule">🙏 נרשמים לשיר אחד בלבד, כדי שכולם יספיקו לעלות לבמה.</p>
+
       <form id="form" novalidate>
+        <fieldset id="fields">
 
-        <label for="performers">מי שר?</label>
-        <input id="performers" type="text" dir="auto" autocomplete="name"
-               maxlength="120" placeholder="שם, או שמות (למשל: דנה ויוסי)">
+          <label for="performers">מי שר?</label>
+          <input id="performers" type="text" dir="auto" autocomplete="name"
+                 maxlength="120" placeholder="שם, או שמות (למשל: דנה ויוסי)">
 
-        <label for="song">איזה שיר?</label>
-        <input id="song" type="text" dir="auto" autocomplete="off"
-               maxlength="120" placeholder="התחילו להקליד או בחרו מהרשימה">
-        <div id="picker" class="picker" hidden></div>
-        <p class="hint">
-          שיר שלא ברשימה? אפשר לכתוב אותו, אבל בואו עם מישהו שיודע לנגן אותו.
-        </p>
+          <label for="song">איזה שיר?</label>
+          <input id="song" type="text" dir="auto" autocomplete="off"
+                 maxlength="120" placeholder="התחילו להקליד או בחרו מהרשימה">
+          <div id="picker" class="picker" hidden></div>
+          <p class="hint">
+            שיר שלא ברשימה? אפשר לכתוב אותו, אבל בואו עם מישהו שיודע לנגן אותו.
+          </p>
 
-        <button id="submit" class="primary" type="submit">להירשם!</button>
+          <label for="phone">טלפון נייד</label>
+          <input id="phone" type="tel" inputmode="tel" autocomplete="tel" dir="ltr"
+                 maxlength="20" placeholder="050-1234567">
+          <p class="hint">
+            המספר לא יופיע ברשימה הפומבית. נשתמש בו רק כדי להתקשר אליכם כשמגיע תורכם לעלות לבמה.
+          </p>
+
+          <button id="submit" class="primary" type="submit">להירשם!</button>
+
+        </fieldset>
         <p id="error" class="error" hidden></p>
-
       </form>
     </section>
 
@@ -57,8 +72,8 @@
       <h2>נרשמתם!</h2>
       <p class="big">המספר שלכם בתור: <b id="number"></b></p>
       <p id="summary" class="summary"></p>
-      <p>נתראה ליד הבמה. רוצים לשיר עוד שיר?</p>
-      <button id="again" class="secondary" type="button">להרשמה נוספת</button>
+      <p id="callNote"></p>
+      <p class="hint">טעות בהרשמה? פנו למארגנים ליד הבמה.</p>
     </section>
 
     <footer>

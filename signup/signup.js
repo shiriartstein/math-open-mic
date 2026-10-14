@@ -19,7 +19,33 @@
   if (data.time) when.push(data.time);
   $('when').textContent = when.join(' · ');
 
-  if (!endpoint) $('notReady').hidden = false;
+  /* ---------- open / closed state ---------- */
+
+  const fields = $('fields');
+  let open = null;                       // null = unknown yet
+
+  function applyState() {
+    const blocked = !endpoint || open === false;
+    fields.disabled = blocked;
+    $('notReady').hidden = !!endpoint;
+    $('closed').hidden = !(endpoint && open === false);
+  }
+
+  async function refreshStatus() {
+    if (!endpoint) return;
+    try {
+      const res = await fetch(endpoint + (endpoint.includes('?') ? '&' : '?') + 'action=status&_=' + Date.now(), { cache: 'no-store' });
+      const out = await res.json();
+      open = out && out.ok ? out.open === true : null;
+    } catch (e) {
+      open = null;                       // unknown: let the server decide on submit
+    }
+    applyState();
+  }
+
+  applyState();
+  refreshStatus();
+  setInterval(refreshStatus, 30000);
 
   /* ---------- song list ---------- */
 
@@ -34,6 +60,7 @@
 
   const performersInput = $('performers');
   const songInput = $('song');
+  const phoneInput = $('phone');
   const picker = $('picker');
   let selected = null;
 
@@ -77,6 +104,21 @@
     hideError();
   });
 
+  /* ---------- phone helpers ---------- */
+
+  function phoneDigits(v) {
+    let d = String(v || '').replace(/\D/g, '');
+    if (d.startsWith('00972')) d = '0' + d.slice(5);
+    else if (d.startsWith('972') && d.length >= 11) d = '0' + d.slice(3);
+    return d;
+  }
+
+  function prettyPhone(d) {
+    if (d.length === 10 && d[0] === '0') return d.slice(0, 3) + '-' + d.slice(3);
+    if (d.length === 9 && d[0] === '0') return d.slice(0, 2) + '-' + d.slice(2);
+    return d;
+  }
+
   /* ---------- submit ---------- */
 
   const form = $('form');
@@ -85,49 +127,62 @@
   function showError(msg) { $('error').textContent = msg; $('error').hidden = false; }
   function hideError() { $('error').hidden = true; }
 
-  function showSuccess(number, song, performers) {
+  function showSuccess(number, song, performers, phone) {
     $('number').textContent = number;
     $('summary').textContent = `${performers} · ${song}`;
+    $('callNote').textContent = phone
+      ? `כשמגיע תורכם נתקשר אליכם למספר ${phone}. שימו לב לטלפון!`
+      : 'כשמגיע תורכם נתקשר אליכם. שימו לב לטלפון!';
     $('formCard').hidden = true;
     $('successCard').hidden = false;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  const MESSAGES = {
+    closed: 'ההרשמה סגורה כרגע.',
+    duplicate: 'מספר הטלפון הזה כבר רשום לשיר. מבקשים להירשם לשיר אחד בלבד 🙏 אם צריך לשנות משהו, פנו למארגנים ליד הבמה.',
+    'bad phone': 'מספר הטלפון לא נראה תקין. בדקו אותו ונסו שוב.',
+    'missing fields': 'חסר פרט בטופס. מלאו את כל השדות.'
+  };
 
   form.addEventListener('submit', async ev => {
     ev.preventDefault();
     hideError();
     const performers = performersInput.value.trim();
     const song = songInput.value.trim();
+    const digits = phoneDigits(phoneInput.value);
     if (!performers) { performersInput.focus(); return showError('כתבו מי שר.'); }
     if (!song) { songInput.focus(); return showError('בחרו שיר מהרשימה או כתבו את שמו.'); }
+    if (!digits) { phoneInput.focus(); return showError('כתבו מספר טלפון נייד, כדי שנוכל להתקשר כשמגיע תורכם.'); }
+    if (digits.length < 9 || digits.length > 15) { phoneInput.focus(); return showError(MESSAGES['bad phone']); }
     if (!endpoint) return showError('ההרשמה עדיין לא הופעלה.');
+    if (open === false) return showError(MESSAGES.closed);
 
+    const phone = prettyPhone(digits);
     btn.disabled = true;
     btn.textContent = 'רגע…';
     try {
-      const res = await fetch(endpoint, { method: 'POST', body: JSON.stringify({ song, performers }) });
+      const res = await fetch(endpoint, { method: 'POST', body: JSON.stringify({ song, performers, phone }) });
       const out = await res.json();
-      if (!out || !out.ok) throw new Error(out && out.error ? out.error : 'server');
+      if (!out || !out.ok) {
+        const err = out && out.error;
+        if (err === 'closed') { open = false; applyState(); }
+        if (err === 'duplicate' && out.song) {
+          return showError(`מספר הטלפון הזה כבר רשום לשיר "${out.song}" (מספר ${out.number} בתור). מבקשים להירשם לשיר אחד בלבד 🙏 אם צריך לשנות משהו, פנו למארגנים ליד הבמה.`);
+        }
+        return showError(MESSAGES[err] || 'ההרשמה לא הצליחה. נסו שוב, או פנו למארגנים ליד הבמה.');
+      }
       try {
-        localStorage.setItem(STORE, JSON.stringify({ number: out.number, song, performers, at: Date.now() }));
+        localStorage.setItem(STORE, JSON.stringify({ number: out.number, song, performers, phone, at: Date.now() }));
         localStorage.setItem(STORE + '-name', performers);
       } catch (e) { /* storage unavailable: fine */ }
-      showSuccess(out.number, song, performers);
+      showSuccess(out.number, song, performers, phone);
     } catch (e) {
       showError('ההרשמה לא הצליחה. בדקו את החיבור ונסו שוב, או פנו למארגנים ליד הבמה.');
     } finally {
       btn.disabled = false;
       btn.textContent = 'להירשם!';
     }
-  });
-
-  $('again').addEventListener('click', () => {
-    selected = null;
-    songInput.value = '';
-    picker.hidden = true;
-    $('successCard').hidden = true;
-    $('formCard').hidden = false;
-    songInput.focus();
   });
 
   /* ---------- restore state after a reload ---------- */
@@ -137,7 +192,7 @@
     if (name) performersInput.value = name;
     const last = JSON.parse(localStorage.getItem(STORE) || 'null');
     if (last && last.number && Date.now() - last.at < 12 * 3600 * 1000) {
-      showSuccess(last.number, last.song, last.performers);
+      showSuccess(last.number, last.song, last.performers, last.phone);
     }
   } catch (e) { /* ignore */ }
 })();
