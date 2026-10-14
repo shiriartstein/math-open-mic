@@ -26,6 +26,7 @@ const MAX_LEN = 120;
 function setup() {
   getSheet_();
   const settings = getSettings_();
+  setOpen_(isOpen_());                 // מנרמל את תא המתג (B2) לתיבת סימון אמיתית
   console.log('דף הניהול: ' + settings.getRange('B3').getValue());
 }
 
@@ -175,8 +176,9 @@ function getSettings_() {
       ['הרשמה פתוחה', false],
       ['דף הניהול', ADMIN_PAGE + '#' + key]
     ]);
-    s.getRange('B1:B3').setNumberFormat('@');
-    s.getRange('B2').insertCheckboxes();
+    s.getRange('B1').setNumberFormat('@');
+    s.getRange('B3').setNumberFormat('@');
+    s.getRange('B2').insertCheckboxes();          // B2 נשאר בפורמט רגיל: פורמט "טקסט" הופך TRUE למחרוזת
     s.getRange('A1:A3').setFontWeight('bold');
     s.setColumnWidth(1, 130);
     s.setColumnWidth(2, 560);
@@ -195,11 +197,15 @@ function checkKey_(k) {
 }
 
 function isOpen_() {
-  return getSettings_().getRange('B2').getValue() === true;
+  const v = getSettings_().getRange('B2').getValue();
+  return v === true || String(v).trim().toUpperCase() === 'TRUE';
 }
 
 function setOpen_(v) {
-  getSettings_().getRange('B2').setValue(v === true);
+  const cell = getSettings_().getRange('B2');
+  cell.setNumberFormat('General');   // מתקן תא שנשאר בפורמט "טקסט" (גרסה קודמת), אחרת TRUE נשמר כמחרוזת והמתג "נכבה" לבד
+  cell.insertCheckboxes();
+  cell.setValue(v === true);
   SpreadsheetApp.flush();
 }
 
