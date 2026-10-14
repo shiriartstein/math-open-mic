@@ -16,8 +16,7 @@
   }
 
   function render() {
-    const hideDone = $('hideDone').checked;
-    const shown = rows.filter(r => !(hideDone && r.done));
+    const shown = rows;
     const frag = document.createDocumentFragment();
     for (const r of shown) {
       const li = document.createElement('li');
@@ -60,7 +59,6 @@
     }
   }
 
-  $('hideDone').addEventListener('change', render);
   $('refresh').addEventListener('click', load);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
 
