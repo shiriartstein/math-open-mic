@@ -13,9 +13,10 @@
  *   POST {"action":"admin","key"}                  → {ok, open, rows:[… כולל phone]}
  *   POST {"action":"setOpen","key","open":true}    → {ok, open}
  *   POST {"action":"remove","key","ns":[3,7]}      → {ok, removed}
+ *   POST {"action":"setDone","key","n":3,"done":true} → {ok, n, done}     (סימון "בוצע" / ביטולו)
  */
 
-const VERSION = '2026-10-14e';      // מופיע בתשובות ping/status/admin, כדי לדעת איזו גרסה באמת רצה
+const VERSION = '2026-10-14f';      // מופיע בתשובות ping/status/admin, כדי לדעת איזו גרסה באמת רצה
 const SHEET_NAME = 'הרשמות';
 const OLD_HEADERS = ['#', 'זמן', 'שיר', 'מבצעים', 'בוצע', 'הערות'];   // הגרסה הראשונה, בלי טלפון
 const SETTINGS_NAME = 'הגדרות';
@@ -53,6 +54,7 @@ function doPost(e) {
   if (action === 'admin') return json_({ ok: true, open: isOpen_(), rows: readRows_(true), version: VERSION, cell: openCellInfo_() });
   if (action === 'setOpen') { setOpen_(body.open === true); return json_({ ok: true, open: isOpen_(), version: VERSION, cell: openCellInfo_() }); }
   if (action === 'remove') return remove_(body.ns);
+  if (action === 'setDone') return setDone_(body.n, body.done === true);
   return json_({ ok: false, error: 'unknown action' });
 }
 
@@ -103,6 +105,31 @@ function remove_(ns) {
     }
     SpreadsheetApp.flush();
     return json_({ ok: true, removed: removed });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function setDone_(n, done) {
+  if (n === undefined || n === null || n === '') return json_({ ok: false, error: 'missing n' });
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const sheet = getSheet_();
+    const last = sheet.getLastRow();
+    if (last >= 2) {
+      const col = sheet.getRange(2, 1, last - 1, 1).getValues();
+      for (let i = 0; i < col.length; i++) {
+        if (col[i][0] !== '' && String(col[i][0]) === String(n)) {
+          const cell = sheet.getRange(i + 2, 6);
+          cell.insertCheckboxes();           // גם לשורה שהוקלדה ידנית בלי תיבת סימון
+          cell.setValue(done === true);
+          SpreadsheetApp.flush();
+          return json_({ ok: true, n: n, done: done === true });
+        }
+      }
+    }
+    return json_({ ok: false, error: 'not found' });
   } finally {
     lock.releaseLock();
   }

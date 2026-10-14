@@ -98,9 +98,11 @@
   function render() {
     const existing = new Set(rows.map(r => r.n));
     for (const n of [...selected]) if (!existing.has(n)) selected.delete(n);
+    const hideDone = $('hideDone').checked;
 
     const frag = document.createDocumentFragment();
     for (const r of rows) {
+      if (hideDone && r.done) continue;
       const li = document.createElement('li');
       li.className = 'arow' + (r.done ? ' done' : '');
 
@@ -138,18 +140,32 @@
       info.append(who, what, meta);
       li.append(info);
 
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+
+      const mark = document.createElement('button');
+      mark.type = 'button';
+      mark.className = 'mark' + (r.done ? ' undo' : '');
+      mark.textContent = r.done ? 'לבטל "בוצע"' : 'בוצע ✓';
+      mark.disabled = r.n === '' || busy;
+      mark.addEventListener('click', () => setDone(r.n, !r.done));
+      actions.append(mark);
+
       const del = document.createElement('button');
       del.type = 'button';
       del.className = 'remove';
       del.textContent = 'הסרה';
-      del.disabled = r.n === '';
-      del.addEventListener('click', () => removeRows([r.n], `להסיר את ההרשמה של ${r.performers} (${r.song})?`));
-      li.append(del);
+      del.disabled = r.n === '' || busy;
+      del.addEventListener('click', () => removeRows([r.n], `להסיר לגמרי את ההרשמה של ${r.performers} (${r.song})?`));
+      actions.append(del);
+
+      li.append(actions);
 
       frag.append(li);
     }
     $('rows').replaceChildren(frag);
     $('empty').hidden = rows.length > 0;
+    $('empty').textContent = rows.length ? '' : 'עדיין לא נרשם אף אחד.';
     const pending = rows.filter(r => !r.done).length;
     $('count').textContent = rows.length + ' נרשמו' + (pending < rows.length ? ' · ' + pending + ' ממתינים' : '');
     renderToggle();
@@ -193,6 +209,25 @@
     }
     load();
   }
+
+  async function setDone(n, done) {
+    if (busy) return;
+    busy = true;
+    status(done ? 'מסמן כבוצע…' : 'מבטל סימון…');
+    try {
+      await call({ action: 'setDone', n, done });
+      const row = rows.find(r => r.n === n);
+      if (row) { row.done = done; render(); }
+      status(done ? 'סומן כבוצע' : 'הסימון בוטל');
+    } catch (e) {
+      if (e.message !== 'bad key') status('הסימון לא נשמר, נסו שוב.', true);
+    } finally {
+      busy = false;
+    }
+    load();
+  }
+
+  $('hideDone').addEventListener('change', render);
 
   $('removeSelected').addEventListener('click', () => {
     const ns = [...selected];

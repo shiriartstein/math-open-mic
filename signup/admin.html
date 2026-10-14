@@ -19,7 +19,7 @@
     <div class="heading">
       <div>
         <h1>ניהול ההרשמות</h1>
-        <p>לפי סדר ההרשמה · כולל טלפונים · מתעדכן אוטומטית כל 10 שניות</p>
+        <p>לפי סדר ההרשמה · כולל טלפונים · מתעדכן אוטומטית כל 10 שניות<br>"בוצע" מסמן שהשיר כבר הושר (אפשר לבטל) · "הסרה" מוחקת את ההרשמה לגמרי</p>
       </div>
       <b id="count">…</b>
     </div>
@@ -45,6 +45,7 @@
       <div class="bar">
         <label><input id="selectAll" type="checkbox"> לסמן את כולם</label>
         <button id="removeSelected" class="danger" type="button" disabled>להסיר את המסומנים (0)</button>
+        <label><input id="hideDone" type="checkbox"> להסתיר שירים שבוצעו</label>
       </div>
 
       <ol id="rows" class="rows"></ol>
