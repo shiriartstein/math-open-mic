@@ -19,7 +19,7 @@
  *   (הוספה/עריכה מהניהול לא כפופות למתג פתוח/סגור; טלפון לא חובה; force=true מתיר טלפון שכבר רשום)
  */
 
-const VERSION = '2026-10-18a';      // מופיע בתשובות ping/status/admin, כדי לדעת איזו גרסה באמת רצה
+const VERSION = '2026-10-18b';      // מופיע בתשובות ping/status/admin, כדי לדעת איזו גרסה באמת רצה
 const SHEET_NAME = 'הרשמות';
 const OLD_HEADERS = ['#', 'זמן', 'שיר', 'מבצעים', 'בוצע', 'הערות'];   // הגרסה הראשונה, בלי טלפון
 const SETTINGS_NAME = 'הגדרות';
@@ -60,6 +60,7 @@ function doPost(e) {
   if (action === 'setDone') return setDone_(body.n, body.done === true);
   if (action === 'add') return addEntry_(body);
   if (action === 'edit') return editEntry_(body);
+  if (action === 'move') return move_(body.n, body.before);
   return json_({ ok: false, error: 'unknown action' });
 }
 
@@ -183,6 +184,36 @@ function editEntry_(body) {
     if (body.notes !== undefined) sheet.getRange(row, 7).setValue(f.notes);
     SpreadsheetApp.flush();
     return json_({ ok: true, n: n });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** שינוי סדר: מעביר את השורה של n כך שתופיע לפני השורה של before (או לסוף אם before ריק). */
+function move_(n, before) {
+  if (n === undefined || n === null || n === '') return json_({ ok: false, error: 'missing n' });
+  const hasTarget = before !== undefined && before !== null && before !== '';
+  if (hasTarget && String(before) === String(n)) return json_({ ok: true, n: n, unchanged: true });
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const sheet = getSheet_();
+    const last = sheet.getLastRow();
+    if (last < 2) return json_({ ok: false, error: 'not found' });
+    const values = sheet.getRange(2, 1, last - 1, HEADERS.length).getValues();
+    const byId = function (id) { for (let i = 0; i < values.length; i++) if (values[i][0] !== '' && String(values[i][0]) === String(id)) return i; return -1; };
+    const from = byId(n);
+    if (from < 0) return json_({ ok: false, error: 'not found' });
+    const row = values.splice(from, 1)[0];
+    let to = values.length;                                     // ברירת מחדל: לסוף
+    if (hasTarget) {
+      to = byId(before);
+      if (to < 0) return json_({ ok: false, error: 'target not found' });
+    }
+    values.splice(to, 0, row);
+    sheet.getRange(2, 1, values.length, HEADERS.length).setValues(values);
+    SpreadsheetApp.flush();
+    return json_({ ok: true, n: n, position: to + 1 });
   } finally {
     lock.releaseLock();
   }

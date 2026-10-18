@@ -14,6 +14,7 @@
   let loading = false;
   let busy = false;                        // a change is in progress: pause auto-refresh
   let editing = null;                      // null = editor closed, 'new' = adding, otherwise the n being edited
+  let draggingN = null;                    // entry being dragged (desktop drag-and-drop)
   const selected = new Set();              // numbers (n) of ticked rows
 
   /* ---------- password: remembered on this device; a #hash in the URL is also accepted ---------- */
@@ -133,11 +134,40 @@
     for (const n of [...selected]) if (!existing.has(n)) selected.delete(n);
     const hideDone = $('hideDone').checked;
 
+    const visible = rows.filter(r => !(hideDone && r.done));
     const frag = document.createDocumentFragment();
-    for (const r of rows) {
-      if (hideDone && r.done) continue;
+    for (let i = 0; i < visible.length; i++) {
+      const r = visible[i];
+      const noId = r.n === '';
       const li = document.createElement('li');
       li.className = 'arow' + (r.done ? ' done' : '');
+      li.dataset.n = r.n;
+
+      // drag-and-drop (desktop): drop a row onto another to place it before that row
+      li.draggable = !noId;
+      li.addEventListener('dragstart', ev => {
+        if (noId) return ev.preventDefault();
+        draggingN = r.n;
+        busy = true;                                   // no auto-refresh while dragging
+        li.classList.add('dragging');
+        $('rows').classList.add('dragging');
+        try { ev.dataTransfer.setData('text/plain', String(r.n)); } catch (e) { /* ignore */ }
+      });
+      li.addEventListener('dragend', () => {
+        draggingN = null;
+        busy = false;
+        li.classList.remove('dragging');
+        $('rows').classList.remove('dragging');
+        for (const x of $('rows').querySelectorAll('.drop-before')) x.classList.remove('drop-before');
+        load();
+      });
+      li.addEventListener('dragover', ev => { if (draggingN !== null && draggingN !== r.n) { ev.preventDefault(); li.classList.add('drop-before'); } });
+      li.addEventListener('dragleave', () => li.classList.remove('drop-before'));
+      li.addEventListener('drop', ev => {
+        ev.preventDefault();
+        li.classList.remove('drop-before');
+        if (draggingN !== null && draggingN !== r.n) { const from = draggingN; draggingN = null; busy = false; moveEntry(from, r.n); }
+      });
 
       const pick = document.createElement('input');
       pick.type = 'checkbox';
@@ -147,6 +177,17 @@
       pick.setAttribute('aria-label', 'לסמן');
       pick.addEventListener('change', () => { pick.checked ? selected.add(r.n) : selected.delete(r.n); updateBatch(); });
       li.append(pick);
+
+      const order = document.createElement('div');
+      order.className = 'order';
+      const up = button('up', '▲', noId || busy || i === 0, () => moveEntry(r.n, visible[i - 1].n));
+      up.title = 'להעלות מקום אחד';
+      const down = button('down', '▼', noId || busy || i === visible.length - 1, () => moveEntry(r.n, i + 2 < visible.length ? visible[i + 2].n : null));
+      down.title = 'להוריד מקום אחד';
+      const jump = button('jump', '⇅', noId || busy, () => promptMove(r));
+      jump.title = 'להעביר למקום אחר';
+      order.append(up, down, jump);
+      li.append(order);
 
       const n = document.createElement('span');
       n.className = 'n';
@@ -173,7 +214,6 @@
       info.append(who, what, meta);
       li.append(info);
 
-      const noId = r.n === '';
       const actions = document.createElement('div');
       actions.className = 'actions';
       actions.append(
@@ -185,6 +225,15 @@
 
       frag.append(li);
     }
+    if (visible.length > 1) {
+      const end = document.createElement('li');
+      end.className = 'drop-end';
+      end.textContent = 'גררו לכאן כדי להעביר לסוף הרשימה';
+      end.addEventListener('dragover', ev => { if (draggingN !== null) { ev.preventDefault(); end.classList.add('drop-before'); } });
+      end.addEventListener('dragleave', () => end.classList.remove('drop-before'));
+      end.addEventListener('drop', ev => { ev.preventDefault(); if (draggingN !== null) { const from = draggingN; draggingN = null; busy = false; moveEntry(from, null); } });
+      frag.append(end);
+    }
     $('rows').replaceChildren(frag);
     $('empty').hidden = rows.length > 0;
     $('empty').textContent = rows.length ? '' : 'עדיין לא נרשם אף אחד.';
@@ -194,6 +243,34 @@
       : '0 נרשמו';
     renderToggle();
     updateBatch();
+  }
+
+  /* ---------- reorder ---------- */
+
+  async function moveEntry(n, before) {
+    if (busy || n === before) return;
+    busy = true;
+    status('משנה סדר…');
+    try {
+      await call({ action: 'move', n, before });
+      status('הסדר עודכן');
+    } catch (e) {
+      if (e.message === 'target not found') status('אין נרשם עם המספר הזה.', true);
+      else if (e.message !== 'bad key') status('שינוי הסדר לא נשמר, נסו שוב.', true);
+    } finally {
+      busy = false;
+    }
+    load();
+  }
+
+  function promptMove(r) {
+    const answer = window.prompt(`להעביר את נרשם מספר ${r.n} לפני נרשם מספר… (ריק = לסוף הרשימה)`, '');
+    if (answer === null) return;
+    const target = answer.trim();
+    if (target === '') return moveEntry(r.n, null);
+    const hit = rows.find(x => x.n !== '' && String(x.n) === target);
+    if (!hit) return status('אין נרשם עם המספר הזה.', true);
+    moveEntry(r.n, hit.n);
   }
 
   /* ---------- editor: add a new entry or edit an existing one ---------- */
