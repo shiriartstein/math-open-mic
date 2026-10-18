@@ -134,6 +134,8 @@
     for (const n of [...selected]) if (!existing.has(n)) selected.delete(n);
     const hideDone = $('hideDone').checked;
 
+    let position = 0;                                   // place in the queue, counted over waiting songs only
+    for (const r of rows) r._pos = r.done ? null : ++position;
     const visible = rows.filter(r => !(hideDone && r.done));
     const frag = document.createDocumentFragment();
     for (let i = 0; i < visible.length; i++) {
@@ -184,14 +186,15 @@
       up.title = 'להעלות מקום אחד';
       const down = button('down', '▼', noId || busy || i === visible.length - 1, () => moveEntry(r.n, i + 2 < visible.length ? visible[i + 2].n : null));
       down.title = 'להוריד מקום אחד';
-      const jump = button('jump', '⇅', noId || busy, () => promptMove(r));
-      jump.title = 'להעביר למקום אחר';
+      const jump = button('jump', '⇅', noId || busy || r.done, () => promptMove(r));
+      jump.title = 'להעביר למקום אחר בתור';
       order.append(up, down, jump);
       li.append(order);
 
       const n = document.createElement('span');
       n.className = 'n';
-      n.textContent = r.n === '' ? '–' : r.n;
+      n.textContent = r.done ? '✓' : String(r._pos);
+      n.title = r.done ? 'בוצע' : 'המקום בתור';
       li.append(n);
 
       const info = document.createElement('div');
@@ -199,6 +202,13 @@
       const who = document.createElement('div'); who.className = 'who'; who.textContent = r.performers;
       const what = document.createElement('div'); what.className = 'what'; what.textContent = r.song;
       const meta = document.createElement('div'); meta.className = 'meta';
+      if (!noId) {
+        const id = document.createElement('span');
+        id.className = 'id';
+        id.textContent = `הרשמה ${r.n}`;
+        id.title = 'מספר ההרשמה בגיליון (לא משתנה)';
+        meta.append(id, ' · ');
+      }
       if (r.phone) {
         const a = document.createElement('a');
         a.href = telHref(r.phone);
@@ -263,14 +273,21 @@
     load();
   }
 
+  /** ⇅: asks for a place in the queue (1..K among waiting songs) and converts it to "before <row>". */
   function promptMove(r) {
-    const answer = window.prompt(`להעביר את נרשם מספר ${r.n} לפני נרשם מספר… (ריק = לסוף הרשימה)`, '');
+    const waiting = rows.filter(x => !x.done);
+    const k = waiting.length;
+    const answer = window.prompt(`להעביר את "${r.performers}" למקום מספר… (1 עד ${k}; ריק = לסוף התור)`, '');
     if (answer === null) return;
     const target = answer.trim();
     if (target === '') return moveEntry(r.n, null);
-    const hit = rows.find(x => x.n !== '' && String(x.n) === target);
-    if (!hit) return status('אין נרשם עם המספר הזה.', true);
-    moveEntry(r.n, hit.n);
+    const q = Number(target);
+    if (!Number.isInteger(q) || q < 1 || q > k) return status(`המקום צריך להיות מספר בין 1 ל-${k}.`, true);
+    const p = r._pos;
+    if (q === p) return;
+    // the row that should come right after the moved one, skipping rows without an id (added by hand in the sheet)
+    const after = waiting.slice(q < p ? q - 1 : q).find(x => x.n !== '' && x.n !== r.n);
+    moveEntry(r.n, after ? after.n : null);
   }
 
   /* ---------- editor: add a new entry or edit an existing one ---------- */

@@ -388,7 +388,7 @@ footer a { color: #ff99bf; }
 
 .row.done .who { text-decoration: line-through; }
 
-.row.done .n::after { content: ' ✓'; color: #4b8f4b; font-size: 18px; }
+.row.done .n { color: #4b8f4b; }
 
 #empty {
   color: #e5c4d6;
@@ -555,7 +555,9 @@ footer a { color: #ff99bf; }
 
 .arow.done .who { text-decoration: line-through; }
 
-.arow.done .n::after { content: ' ✓'; color: #4b8f4b; font-size: 16px; }
+.arow.done .n { color: #4b8f4b; }
+
+.arow .meta .id { color: #8a7a86; font-size: 13px; }
 
 @media (max-width: 520px) {
   .arow { grid-template-columns: auto auto auto 1fr; }

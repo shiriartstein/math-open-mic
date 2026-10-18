@@ -23,6 +23,8 @@
 
   const fields = $('fields');
   let open = null;                       // null = unknown yet
+  let publicRows = null;                 // the public list (no phones), used to show the live place in the queue
+  let mine = null;                       // this device's sign-up: { number, song, performers, phone }
 
   function applyState() {
     const blocked = !endpoint || open === false;
@@ -31,21 +33,39 @@
     $('closed').hidden = !(endpoint && open === false);
   }
 
-  async function refreshStatus() {
+  /** The place is counted over waiting songs only; performed songs show a check instead. */
+  function updatePlace() {
+    $('place').hidden = true;
+    $('placeDone').hidden = true;
+    if (!mine || !publicRows) return;
+    let position = 0;
+    for (const r of publicRows) {
+      if (!r.done) position++;
+      if (String(r.n) === String(mine.number)) {
+        if (r.done) $('placeDone').hidden = false;
+        else { $('placeNum').textContent = position; $('place').hidden = false; }
+        return;
+      }
+    }
+  }
+
+  async function refreshState() {
     if (!endpoint) return;
     try {
-      const res = await fetch(endpoint + (endpoint.includes('?') ? '&' : '?') + 'action=status&_=' + Date.now(), { cache: 'no-store' });
+      const res = await fetch(endpoint + (endpoint.includes('?') ? '&' : '?') + 'action=list&_=' + Date.now(), { cache: 'no-store' });
       const out = await res.json();
       open = out && out.ok ? out.open === true : null;
+      publicRows = out && out.ok && Array.isArray(out.rows) ? out.rows : null;
     } catch (e) {
       open = null;                       // unknown: let the server decide on submit
     }
     applyState();
+    updatePlace();
   }
 
   applyState();
-  refreshStatus();
-  setInterval(refreshStatus, 30000);
+  refreshState();
+  setInterval(refreshState, 30000);
 
   /* ---------- song list ---------- */
 
@@ -128,8 +148,9 @@
   function hideError() { $('error').hidden = true; }
 
   function showSuccess(number, song, performers, phone) {
-    $('number').textContent = number;
+    mine = { number, song, performers, phone };
     $('summary').textContent = `${performers} · ${song}`;
+    updatePlace();
     $('callNote').textContent = phone
       ? `כשמגיע תורכם נתקשר אליכם למספר ${phone}. שימו לב לטלפון!`
       : 'כשמגיע תורכם נתקשר אליכם. שימו לב לטלפון!';
@@ -177,6 +198,7 @@
         localStorage.setItem(STORE + '-name', performers);
       } catch (e) { /* storage unavailable: fine */ }
       showSuccess(out.number, song, performers, phone);
+      refreshState();                    // fetch the list so the place in the queue appears right away
     } catch (e) {
       showError('ההרשמה לא הצליחה. בדקו את החיבור ונסו שוב, או פנו למארגנים ליד הבמה.');
     } finally {

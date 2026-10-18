@@ -18,11 +18,13 @@
   function render() {
     const shown = rows;
     const frag = document.createDocumentFragment();
+    let position = 0;                                   // place in the queue, counted over waiting songs only
     for (const r of shown) {
       const li = document.createElement('li');
       li.className = 'row' + (r.done ? ' done' : '');
       const t = new Date(r.time);
-      for (const [cls, value] of [['n', r.n], ['who', r.performers], ['t', isNaN(t) ? '' : timeFmt.format(t)], ['what', r.song]]) {
+      const label = r.done ? '✓' : String(++position);
+      for (const [cls, value] of [['n', label], ['who', r.performers], ['t', isNaN(t) ? '' : timeFmt.format(t)], ['what', r.song]]) {
         const e = document.createElement(cls === 'n' || cls === 't' ? 'span' : 'div');
         e.className = cls;
         e.textContent = value == null ? '' : String(value);
