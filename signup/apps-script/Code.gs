@@ -14,9 +14,12 @@
  *   POST {"action":"setOpen","key","open":true}    → {ok, open}
  *   POST {"action":"remove","key","ns":[3,7]}      → {ok, removed}
  *   POST {"action":"setDone","key","n":3,"done":true} → {ok, n, done}     (סימון "בוצע" / ביטולו)
+ *   POST {"action":"add","key","song","performers","phone"?,"notes"?,"force"?}      → {ok, number}
+ *   POST {"action":"edit","key","n","song","performers","phone"?,"notes"?,"force"?} → {ok, n}
+ *   (הוספה/עריכה מהניהול לא כפופות למתג פתוח/סגור; טלפון לא חובה; force=true מתיר טלפון שכבר רשום)
  */
 
-const VERSION = '2026-10-14f';      // מופיע בתשובות ping/status/admin, כדי לדעת איזו גרסה באמת רצה
+const VERSION = '2026-10-18a';      // מופיע בתשובות ping/status/admin, כדי לדעת איזו גרסה באמת רצה
 const SHEET_NAME = 'הרשמות';
 const OLD_HEADERS = ['#', 'זמן', 'שיר', 'מבצעים', 'בוצע', 'הערות'];   // הגרסה הראשונה, בלי טלפון
 const SETTINGS_NAME = 'הגדרות';
@@ -55,6 +58,8 @@ function doPost(e) {
   if (action === 'setOpen') { setOpen_(body.open === true); return json_({ ok: true, open: isOpen_(), version: VERSION, cell: openCellInfo_() }); }
   if (action === 'remove') return remove_(body.ns);
   if (action === 'setDone') return setDone_(body.n, body.done === true);
+  if (action === 'add') return addEntry_(body);
+  if (action === 'edit') return editEntry_(body);
   return json_({ ok: false, error: 'unknown action' });
 }
 
@@ -116,23 +121,82 @@ function setDone_(n, done) {
   lock.waitLock(15000);
   try {
     const sheet = getSheet_();
-    const last = sheet.getLastRow();
-    if (last >= 2) {
-      const col = sheet.getRange(2, 1, last - 1, 1).getValues();
-      for (let i = 0; i < col.length; i++) {
-        if (col[i][0] !== '' && String(col[i][0]) === String(n)) {
-          const cell = sheet.getRange(i + 2, 6);
-          cell.insertCheckboxes();           // גם לשורה שהוקלדה ידנית בלי תיבת סימון
-          cell.setValue(done === true);
-          SpreadsheetApp.flush();
-          return json_({ ok: true, n: n, done: done === true });
-        }
-      }
-    }
-    return json_({ ok: false, error: 'not found' });
+    const row = findRow_(sheet, n);
+    if (!row) return json_({ ok: false, error: 'not found' });
+    const cell = sheet.getRange(row, 6);
+    cell.insertCheckboxes();           // גם לשורה שהוקלדה ידנית בלי תיבת סימון
+    cell.setValue(done === true);
+    SpreadsheetApp.flush();
+    return json_({ ok: true, n: n, done: done === true });
   } finally {
     lock.releaseLock();
   }
+}
+
+/* ---------- admin: add / edit ---------- */
+
+function entryFields_(body) {
+  const song = clean_(body.song);
+  const performers = clean_(body.performers);
+  const digits = phoneDigits_(body.phone);
+  if (!song || !performers) return { error: 'missing fields' };
+  if (digits && (digits.length < 9 || digits.length > 15)) return { error: 'bad phone' };
+  return { song: song, performers: performers, digits: digits, phone: digits ? formatPhone_(digits) : '', notes: clean_(body.notes) };
+}
+
+function addEntry_(body) {
+  const f = entryFields_(body);
+  if (f.error) return json_({ ok: false, error: f.error });
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const sheet = getSheet_();
+    if (f.digits && body.force !== true) {
+      const dup = findByPhone_(sheet, f.digits);
+      if (dup) return json_({ ok: false, error: 'duplicate', number: dup.n, song: dup.song });
+    }
+    const number = nextNumber_(sheet);
+    appendRow_(sheet, [number, new Date(), f.song, f.performers, f.phone, false, f.notes]);
+    SpreadsheetApp.flush();
+    return json_({ ok: true, number: number });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function editEntry_(body) {
+  const n = body.n;
+  if (n === undefined || n === null || n === '') return json_({ ok: false, error: 'missing n' });
+  const f = entryFields_(body);
+  if (f.error) return json_({ ok: false, error: f.error });
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const sheet = getSheet_();
+    const row = findRow_(sheet, n);
+    if (!row) return json_({ ok: false, error: 'not found' });
+    if (f.digits && body.force !== true) {
+      const dup = findByPhone_(sheet, f.digits);
+      if (dup && String(dup.n) !== String(n)) return json_({ ok: false, error: 'duplicate', number: dup.n, song: dup.song });
+    }
+    sheet.getRange(row, 3, 1, 3).setValues([[f.song, f.performers, f.phone]]);
+    if (body.notes !== undefined) sheet.getRange(row, 7).setValue(f.notes);
+    SpreadsheetApp.flush();
+    return json_({ ok: true, n: n });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** מספר השורה בגיליון (1-based) של ההרשמה עם המספר n, או null. */
+function findRow_(sheet, n) {
+  const last = sheet.getLastRow();
+  if (last < 2) return null;
+  const col = sheet.getRange(2, 1, last - 1, 1).getValues();
+  for (let i = 0; i < col.length; i++) {
+    if (col[i][0] !== '' && String(col[i][0]) === String(n)) return i + 2;
+  }
+  return null;
 }
 
 /* ---------- sheets ---------- */

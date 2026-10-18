@@ -414,6 +414,29 @@ footer a { color: #ff99bf; }
 .toggle.off { background: #ffb0b0; color: #6a1414; border-color: #e06060; }
 .toggle:disabled { opacity: .6; cursor: wait; }
 
+.add {
+  background: #ff8536;
+  color: #24122c;
+  padding: 10px 16px;
+  font-size: 15px;
+}
+
+.edit-card { margin: 14px 0 4px; }
+
+.edit-card h2 { font-size: clamp(24px, 5vw, 32px); }
+
+.edit-card label { font-size: 16px; margin-top: 14px; }
+
+.edit-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.edit-buttons .primary { flex: 1; margin-top: 0; font-size: 18px; padding: 12px; }
+
+.edit-buttons .secondary { margin-top: 0; }
+
 .danger {
   background: #c62f4f;
   color: #fff;
@@ -463,11 +486,17 @@ footer a { color: #ff99bf; }
 }
 
 .arow .mark,
+.arow .edit,
 .arow .remove {
   background: #fff;
   padding: 8px 12px;
   font-size: 14px;
   white-space: nowrap;
+}
+
+.arow .edit {
+  color: #24122c;
+  border: 2px solid #b9a3b3;
 }
 
 .arow .mark {
@@ -486,6 +515,7 @@ footer a { color: #ff99bf; }
 }
 
 .arow .mark:disabled,
+.arow .edit:disabled,
 .arow .remove:disabled { opacity: .35; cursor: not-allowed; }
 
 .arow.done { opacity: .5; border-right-color: #8fbf8f; }
@@ -496,7 +526,7 @@ footer a { color: #ff99bf; }
 
 @media (max-width: 520px) {
   .arow { grid-template-columns: auto auto 1fr; }
-  .arow .actions { grid-column: 2 / -1; flex-direction: row; }
+  .arow .actions { grid-column: 2 / -1; flex-direction: row; flex-wrap: wrap; }
 }
 
 @media print {

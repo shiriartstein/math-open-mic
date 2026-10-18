@@ -12,7 +12,8 @@
   let rows = [];
   let open = null;
   let loading = false;
-  let busy = false;                        // a removal / toggle in progress: pause auto-refresh
+  let busy = false;                        // a change is in progress: pause auto-refresh
+  let editing = null;                      // null = editor closed, 'new' = adding, otherwise the n being edited
   const selected = new Set();              // numbers (n) of ticked rows
 
   /* ---------- password: remembered on this device; a #hash in the URL is also accepted ---------- */
@@ -62,7 +63,7 @@
     const out = await res.json();
     if (!out) throw new Error('empty');
     if (out.error === 'bad key') { forgetKey(); askKey('הסיסמה לא נכונה.'); throw new Error('bad key'); }
-    if (!out.ok) throw new Error(out.error || 'server');
+    if (!out.ok) { const err = new Error(out.error || 'server'); err.data = out; throw err; }
     return out;
   }
 
@@ -71,15 +72,37 @@
     $('status').className = 'status' + (isError ? ' error' : '');
   }
 
-  /* ---------- rendering ---------- */
+  /* ---------- song list for the editor (from the site's data.js) ---------- */
 
-  function telHref(phone) {
-    let d = String(phone || '').replace(/\D/g, '');
+  const songs = String((window.EVENT_DATA || {}).songs || '').split('\n')
+    .map(line => { const [title, artist] = line.trim().split('|'); return { title: (title || '').trim(), artist: (artist || '').trim() }; })
+    .filter(s => s.title);
+  {
+    const frag = document.createDocumentFragment();
+    for (const s of songs) {
+      const o = document.createElement('option');
+      o.value = s.artist ? `${s.title} – ${s.artist}` : s.title;
+      frag.append(o);
+    }
+    $('songOptions').replaceChildren(frag);
+  }
+
+  /* ---------- phone helpers ---------- */
+
+  function phoneDigits(v) {
+    let d = String(v || '').replace(/\D/g, '');
     if (d.startsWith('00972')) d = '0' + d.slice(5);
     else if (d.startsWith('972') && d.length >= 11) d = '0' + d.slice(3);
+    return d;
+  }
+
+  function telHref(phone) {
+    let d = phoneDigits(phone);
     if (d.startsWith('0')) d = '972' + d.slice(1);
     return 'tel:+' + d;
   }
+
+  /* ---------- rendering ---------- */
 
   function renderToggle() {
     const t = $('toggle');
@@ -93,6 +116,16 @@
     $('removeSelected').disabled = n === 0 || busy;
     $('removeSelected').textContent = `להסיר את המסומנים (${n})`;
     $('selectAll').checked = rows.length > 0 && rows.every(r => r.n === '' || selected.has(r.n));
+  }
+
+  function button(cls, text, disabled, onClick) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = cls;
+    b.textContent = text;
+    b.disabled = disabled;
+    b.addEventListener('click', onClick);
+    return b;
   }
 
   function render() {
@@ -140,25 +173,14 @@
       info.append(who, what, meta);
       li.append(info);
 
+      const noId = r.n === '';
       const actions = document.createElement('div');
       actions.className = 'actions';
-
-      const mark = document.createElement('button');
-      mark.type = 'button';
-      mark.className = 'mark' + (r.done ? ' undo' : '');
-      mark.textContent = r.done ? 'לבטל "בוצע"' : 'בוצע ✓';
-      mark.disabled = r.n === '' || busy;
-      mark.addEventListener('click', () => setDone(r.n, !r.done));
-      actions.append(mark);
-
-      const del = document.createElement('button');
-      del.type = 'button';
-      del.className = 'remove';
-      del.textContent = 'הסרה';
-      del.disabled = r.n === '' || busy;
-      del.addEventListener('click', () => removeRows([r.n], `להסיר לגמרי את ההרשמה של ${r.performers} (${r.song})?`));
-      actions.append(del);
-
+      actions.append(
+        button('mark' + (r.done ? ' undo' : ''), r.done ? 'לבטל "בוצע"' : 'בוצע ✓', noId || busy, () => setDone(r.n, !r.done)),
+        button('edit', 'עריכה', noId || busy, () => openEditor(r)),
+        button('remove', 'הסרה', noId || busy, () => removeRows([r.n], `להסיר לגמרי את ההרשמה של ${r.performers} (${r.song})?`))
+      );
       li.append(actions);
 
       frag.append(li);
@@ -172,6 +194,78 @@
       : '0 נרשמו';
     renderToggle();
     updateBatch();
+  }
+
+  /* ---------- editor: add a new entry or edit an existing one ---------- */
+
+  function showEditError(msg) { $('eError').textContent = msg; $('eError').hidden = false; }
+
+  function openEditor(row) {
+    editing = row ? row.n : 'new';
+    $('editTitle').textContent = row ? `עריכת נרשם מספר ${row.n}` : 'הוספת נרשם';
+    $('ePerformers').value = row ? row.performers : '';
+    $('eSong').value = row ? row.song : '';
+    $('ePhone').value = row ? row.phone || '' : '';
+    $('eNotes').value = row ? row.notes || '' : '';
+    $('eError').hidden = true;
+    $('editCard').hidden = false;
+    if ($('editCard').scrollIntoView) $('editCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('ePerformers').focus();
+  }
+
+  function closeEditor() {
+    editing = null;
+    $('editCard').hidden = true;
+  }
+
+  async function saveEditor(force) {
+    if (editing === null || busy) return;
+    const performers = $('ePerformers').value.trim();
+    const song = $('eSong').value.trim();
+    const digits = phoneDigits($('ePhone').value);
+    const notes = $('eNotes').value.trim();
+    $('eError').hidden = true;
+    if (!performers) { $('ePerformers').focus(); return showEditError('כתבו מי שר.'); }
+    if (!song) { $('eSong').focus(); return showEditError('כתבו או בחרו שיר.'); }
+    if (digits && (digits.length < 9 || digits.length > 15)) { $('ePhone').focus(); return showEditError('מספר הטלפון לא נראה תקין.'); }
+
+    const payload = { action: editing === 'new' ? 'add' : 'edit', song, performers, phone: $('ePhone').value.trim(), notes };
+    if (editing !== 'new') payload.n = editing;
+    if (force) payload.force = true;
+
+    busy = true;
+    $('eSave').disabled = true;
+    status('שומר…');
+    try {
+      const out = await call(payload);
+      const what = editing === 'new' ? `נוסף נרשם מספר ${out.number}` : `נרשם מספר ${editing} עודכן`;
+      closeEditor();
+      status(what);
+    } catch (e) {
+      if (e.message === 'bad key') { /* handled: login shown */ }
+      else if (e.message === 'duplicate') {
+        const d = e.data || {};
+        busy = false; $('eSave').disabled = false;
+        if (window.confirm(`הטלפון הזה כבר רשום לשיר "${d.song}" (מספר ${d.number}). לשמור בכל זאת?`)) return saveEditor(true);
+        return status('לא נשמר');
+      }
+      else if (e.message === 'not found') showEditError('ההרשמה לא נמצאה. אולי הוסרה בינתיים.');
+      else if (e.message === 'bad phone') showEditError('מספר הטלפון לא נראה תקין.');
+      else if (e.message === 'missing fields') showEditError('חסר שם או שיר.');
+      else showEditError('השמירה לא הצליחה. נסו שוב.');
+      status('לא נשמר', true);
+    } finally {
+      busy = false;
+      $('eSave').disabled = false;
+    }
+    load();
+  }
+
+  $('addNew').addEventListener('click', () => openEditor(null));
+  $('eCancel').addEventListener('click', closeEditor);
+  $('eSave').addEventListener('click', () => saveEditor(false));
+  for (const id of ['ePerformers', 'eSong', 'ePhone', 'eNotes']) {
+    $(id).addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); saveEditor(false); } });
   }
 
   /* ---------- actions ---------- */
@@ -203,6 +297,7 @@
     try {
       const out = await call({ action: 'remove', ns });
       ns.forEach(n => selected.delete(n));
+      if (editing !== null && ns.includes(editing)) closeEditor();
       status(`הוסרו ${out.removed} הרשמות`);
     } catch (e) {
       if (e.message !== 'bad key') status('ההסרה לא הצליחה, נסו שוב.', true);

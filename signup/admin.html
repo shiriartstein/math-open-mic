@@ -6,9 +6,10 @@
   <meta name="theme-color" content="#1b0c29">
   <meta name="robots" content="noindex">
   <title>ניהול ההרשמות | במה פתוחה!</title>
-  <link rel="stylesheet" href="signup.css?v=20261014h">
+  <link rel="stylesheet" href="signup.css?v=20261018a">
+  <script defer src="../data.js"></script>
   <script defer src="config.js"></script>
-  <script defer src="admin.js?v=20261014h"></script>
+  <script defer src="admin.js?v=20261018a"></script>
 </head>
 <body class="list-page admin-page">
 
@@ -19,7 +20,7 @@
     <div class="heading">
       <div>
         <h1>ניהול ההרשמות</h1>
-        <p>לפי סדר ההרשמה · כולל טלפונים · מתעדכן אוטומטית כל 10 שניות<br>"בוצע" מסמן שהשיר כבר הושר (אפשר לבטל) · "הסרה" מוחקת את ההרשמה לגמרי</p>
+        <p>לפי סדר ההרשמה · כולל טלפונים · מתעדכן אוטומטית כל 10 שניות<br>"בוצע" מסמן שהשיר כבר הושר (אפשר לבטל) · "עריכה" משנה פרטים · "הסרה" מוחקת את ההרשמה לגמרי</p>
       </div>
       <b id="count">…</b>
     </div>
@@ -38,6 +39,7 @@
       <div class="bar">
         <span id="status" class="status">מתחבר…</span>
         <button id="toggle" class="toggle" type="button" disabled>…</button>
+        <button id="addNew" class="add" type="button">+ הוספת נרשם</button>
         <button id="refresh" type="button">לרענן עכשיו</button>
         <button id="logout" type="button">יציאה</button>
       </div>
@@ -47,6 +49,31 @@
         <button id="removeSelected" class="danger" type="button" disabled>להסיר את המסומנים (0)</button>
         <label><input id="hideDone" type="checkbox"> להסתיר שירים שבוצעו</label>
       </div>
+
+      <section id="editCard" class="card edit-card" hidden>
+        <div class="kicker">ENTRY ✦</div>
+        <h2 id="editTitle">הוספת נרשם</h2>
+
+        <label for="ePerformers">מי שר?</label>
+        <input id="ePerformers" type="text" dir="auto" maxlength="120" placeholder="שם, או שמות">
+
+        <label for="eSong">איזה שיר?</label>
+        <input id="eSong" type="text" dir="auto" maxlength="120" list="songOptions" autocomplete="off"
+               placeholder="בוחרים מהרשימה או כותבים שיר אחר">
+        <datalist id="songOptions"></datalist>
+
+        <label for="ePhone">טלפון (לא חובה)</label>
+        <input id="ePhone" type="tel" inputmode="tel" dir="ltr" maxlength="20" placeholder="050-1234567">
+
+        <label for="eNotes">הערות (לא חובה)</label>
+        <input id="eNotes" type="text" dir="auto" maxlength="120" placeholder="למשל: מביאים גיטריסט">
+
+        <div class="edit-buttons">
+          <button id="eSave" class="primary" type="button">שמירה</button>
+          <button id="eCancel" class="secondary" type="button">ביטול</button>
+        </div>
+        <p id="eError" class="error" hidden></p>
+      </section>
 
       <ol id="rows" class="rows"></ol>
       <p id="empty" hidden>עדיין לא נרשם אף אחד.</p>
